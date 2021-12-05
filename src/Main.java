@@ -1,6 +1,5 @@
-import days.day3.Day3;
-import days.day3.Day3;
 import days.day4.Day4;
+import days.day5.Day5;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -11,8 +10,8 @@ public class Main {
 //        Day1.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day1.txt"));
 //        Day2.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day2.txt"));
 //        Day3.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day3.txt"));
-        Day4.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day4.txt"));
-//        Day5.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day5.txt"));
+//        Day4.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day4.txt"));
+        Day5.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day5.txt"));
 //        Day6.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day6.txt"));
 //        Day7.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day7.txt"));
 //        Day8.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day8.txt"));
