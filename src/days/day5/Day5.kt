@@ -9,13 +9,9 @@ object Day5 {
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val lines = Files.readAllLines(input).map { it ->
-            var startPointParts = it.split("->")[0].split(",").map { it.trim() }
-            var startPoint = Point(startPointParts[0].toInt(), startPointParts[1].toInt())
+            val parts = it.split("->").map { it.trim() }
 
-            var endPointParts = it.split("->")[1].split(",").map { it.trim() }
-            var endPoint = Point(endPointParts[0].toInt(), endPointParts[1].toInt())
-
-            Line(startPoint, endPoint)
+            Line(Point(parts[0]), Point(parts[1]))
         }
 
         solvePartOne(lines)

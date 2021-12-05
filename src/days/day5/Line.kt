@@ -2,11 +2,11 @@ package days.day5
 
 class Line(var start: Point, var end: Point) {
 
-    fun isHorizontalOrVertical() = start.x == end.x || start.y == end.y
+    fun isHorizontalOrVertical() = isHorizontal() || isVertical()
 
-    fun isHorizontal() = start.y == end.y
+    private fun isHorizontal() = start.y == end.y
 
-    fun isVertical() = start.x == end.x
+    private fun isVertical() = start.x == end.x
 
     fun getAllPointsCovered(): List<Point> {
         if (isHorizontal()) {
@@ -20,7 +20,6 @@ class Line(var start: Point, var end: Point) {
         } else {
             // check if 45 degrees
             // slope has to be 1 or -1
-
             val startPoint = if (start.x > end.x) end else start
             val endPoint = if (start.x > end.x) start else end
 
@@ -29,22 +28,10 @@ class Line(var start: Point, var end: Point) {
                 return listOf()
             }
             val points = mutableListOf<Point>()
-            if (slope > 0) {
-                var currentPoint = Point(startPoint.x, startPoint.y)
-
-                do {
-                    points.add(currentPoint)
-                    currentPoint = Point(currentPoint.x + 1, currentPoint.y + 1)
-                } while(currentPoint != endPoint)
+            var currentPoint = Point(startPoint.x, startPoint.y)
+            while (currentPoint != endPoint) {
                 points.add(currentPoint)
-            } else {
-                var currentPoint = Point(startPoint.x, startPoint.y)
-                do {
-                    points.add(currentPoint)
-                    currentPoint = Point(currentPoint.x + 1, currentPoint.y - 1)
-                } while(currentPoint != endPoint)
-                points.add(currentPoint)
-
+                currentPoint = if (slope > 0) Point(currentPoint.x + 1, currentPoint.y + 1) else Point(currentPoint.x + 1, currentPoint.y - 1)
             }
             return points
         }

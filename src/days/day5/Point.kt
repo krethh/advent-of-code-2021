@@ -1,28 +1,10 @@
 package days.day5
 
-class Point(var x: Int, var y: Int) {
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Point
-
-        if (x != other.x) return false
-        if (y != other.y) return false
-
-        return true
+data class Point(var x: Int, var y: Int) {
+    companion object {
+        operator fun invoke(string: String): Point {
+            val parts = string.split(",")
+            return Point(parts[0].toInt(), parts[1].toInt())
+        }
     }
-
-    override fun hashCode(): Int {
-        var result = x
-        result = 31 * result + y
-        return result
-    }
-
-    override fun toString(): String {
-        return "Point(x=$x, y=$y)"
-    }
-
-
 }
