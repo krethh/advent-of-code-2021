@@ -3,6 +3,7 @@ package days.day7
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.math.abs
 
 object Day7 {
 
@@ -22,7 +23,7 @@ object Day7 {
     }
 
     private fun calculateDistance(item: Int, target: Int, partOne: Boolean): Int {
-        val distance = Math.abs(item - target)
+        val distance = abs(item - target)
         return if (partOne) distance else IntRange(0, distance).sum()
     }
 
