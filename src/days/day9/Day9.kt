@@ -11,65 +11,48 @@ object Day9 {
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
 
-        var lowPoints = mutableListOf<String>()
         val lowPointIndexes = mutableListOf<Pair<Int, Int>>()
         for (i in 0 until items.size) {
             for (j in 0 until items[0].length) {
+                val possibleIndexes = getPossibleNeighborIndexes(i, j)
 
-                val possibleIndexes = listOf(
-                    Pair(i, j - 1),
-                    Pair(i, j + 1),
-                    Pair(i + 1, j),
-                    Pair (i - 1, j)
-                )
+                val smallest = possibleIndexes.filter { isWithin(items, it) }.minOf { pair ->
+                    items[pair.first][pair.second].toString()
+                }.toInt()
 
-                var neighbors = mutableListOf<String>()
-                possibleIndexes.forEach { pair ->
-                    val (first, second) = pair
-                    if (first >= 0 && first < items.size &&  second >= 0 && second <items[0].length) {
-                        neighbors.add(items[pair.first][pair.second].toString())
-                    }
-                }
-                val smallest = neighbors.minOrNull()!!.toInt()
-                if (items[i][j].toString().toInt() < smallest) {
-                    lowPoints.add(items[i][j].toString())
+                if (items[i].intAt(j) < smallest) {
                     lowPointIndexes.add(Pair(i, j))
                 }
             }
         }
 
-        val basins =
-        lowPointIndexes.map {
-            var pointsInBasin = mutableSetOf<Pair<Int, Int>>()
-            searchForBasin(pointsInBasin, it.first, it.second, items, 0)
-            pointsInBasin
-        }
+        println(lowPointIndexes.map { items[it.first].intAt(it.second) }.sumOf { it + 1 })
 
-        val sortedBySize = basins.sortedByDescending { it.size }
-        println(sortedBySize[0].size * sortedBySize[1].size * sortedBySize[2].size)
+        val basins = lowPointIndexes.map {
+                var pointsInBasin = mutableSetOf<Pair<Int, Int>>()
+                searchForBasin(pointsInBasin, it.first, it.second, items)
+                pointsInBasin
+            }.sortedByDescending { it.size }
+
+        println(basins[0].size * basins[1].size * basins[2].size)
     }
 
-    private fun searchForBasin(pointsInBasin: MutableSet<Pair<Int, Int>>, i: Int, j: Int, items: List<String>, depth: Int) {
+    private fun searchForBasin(pointsInBasin: MutableSet<Pair<Int, Int>>, i: Int, j: Int, items: List<String>) {
         pointsInBasin.add(Pair(i, j))
-        val possibleIndexes = listOf(
-            Pair(i, j - 1),
-            Pair(i, j + 1),
-            Pair(i + 1, j),
-            Pair (i - 1, j)
-        )
+        val possibleIndexes = getPossibleNeighborIndexes(i, j)
 
-        var neighbors = mutableListOf<Pair<Int, Int>>()
-        possibleIndexes.forEach { pair ->
-            val (first, second) = pair
-            if (first >= 0 && first < items.size &&  second >= 0 && second <items[0].length) {
-                if (items[first][second].toString().toInt() > items[i][j].toString().toInt() && items[first][second].toString().toInt() < 9) {
-                    neighbors.add(pair)
-                }
-            }
-        }
-        neighbors.forEach {
-            searchForBasin(pointsInBasin, it.first, it.second, items, depth + 1)
-        }
+        possibleIndexes
+            .filter { isWithin(items, it) }
+            .filter { items[it.first].intAt(it.second) > items[i].intAt(j) && items[it.first].intAt(it.second) < 9 }
+            .forEach { searchForBasin(pointsInBasin, it.first, it.second, items) }
     }
+
+    private fun String.intAt(index: Int) = this[index].toString().toInt()
+
+    private fun isWithin(items: List<String>, point: Pair<Int, Int>) = point.first >= 0 && point.first < items.size
+            && point.second >= 0 && point.second < items[0].length
+
+    private fun getPossibleNeighborIndexes(i: Int, j: Int) =
+        listOf(Pair(i, j - 1), Pair(i, j + 1), Pair(i + 1, j), Pair(i - 1, j))
 
 }
