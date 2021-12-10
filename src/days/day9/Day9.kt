@@ -29,7 +29,7 @@ object Day9 {
         println(lowPointIndexes.map { items[it.first].intAt(it.second) }.sumOf { it + 1 })
 
         val basins = lowPointIndexes.map {
-                var pointsInBasin = mutableSetOf<Pair<Int, Int>>()
+                val pointsInBasin = mutableSetOf<Pair<Int, Int>>()
                 searchForBasin(pointsInBasin, it.first, it.second, items)
                 pointsInBasin
             }.sortedByDescending { it.size }
