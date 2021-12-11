@@ -11,37 +11,37 @@ object Day11 {
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
 
-        var currentGrid = items.map {
+        var grid = items.map {
             it.map { it.toString().toInt() }.toMutableList()
         }.toMutableList()
 
         var flashes = 0
-        for (step in 0 until 100) {
+        for (step in 0 until 1000) {
             var flashedInThisStep = mutableSetOf<Pair<Int, Int>>()
-            var nextGrid = currentGrid.toMutableList()
             for (i in 0 until 10) {
                 for (j in 0 until 10) {
-                    nextGrid[i][j] = currentGrid[i][j] + 1
+                    grid[i][j] = grid[i][j] + 1
 
-                    if (nextGrid[i][j] > 9 && !flashedInThisStep.contains(Pair(i, j))) {
+                    if (grid[i][j] > 9 && !flashedInThisStep.contains(Pair(i, j))) {
                         flashedInThisStep.add(Pair(i, j))
-                        flashNeighbors(nextGrid, i, j, flashedInThisStep)
+                        flashNeighbors(grid, i, j, flashedInThisStep)
                     }
                 }
             }
             flashedInThisStep.forEach {
-                nextGrid[it.first][it.second] = 0
+                grid[it.first][it.second] = 0
                 flashes += 1
             }
 
+            if (step == 99) {
+                println(flashes)
+            }
+
             if (flashedInThisStep.size == 100) {
-                println (step)
+                println (step + 1)
                 break
             }
-//            println (flashedInThisStep.size)
-            currentGrid = nextGrid.toMutableList()
         }
-        println (flashes)
     }
 
     private fun flashNeighbors(grid: MutableList<MutableList<Int>>, i: Int, j: Int, flashedInThisStep: MutableSet<Pair<Int, Int>>) {
