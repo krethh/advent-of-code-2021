@@ -17,8 +17,8 @@ object Day11 {
         var flashes = 0
         for (step in 0 until 1000) {
             var flashedInThisStep = mutableSetOf<Pair<Int, Int>>()
-            for (i in 0 until 10) {
-                for (j in 0 until 10) {
+            for (i in 0 until grid.iSize) {
+                for (j in 0 until grid.jSize) {
                     grid.at(i, j).value = grid.valueAt(i, j) + 1
                     if (grid.valueAt(i, j) > 9 && !flashedInThisStep.contains(Pair(i, j))) {
                         flashedInThisStep.add(Pair(i, j))
