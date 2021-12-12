@@ -18,15 +18,21 @@ object Day12 {
             adjacencyMatrix.add(Pair(parts[0], parts[1]))
         }
 
+        solvePart(adjacencyMatrix, partTwo = false)
+        solvePart(adjacencyMatrix, partTwo = true)
+    }
+
+    private fun solvePart(adjacencyMatrix: MutableList<Pair<String, String>>, partTwo: Boolean) {
         val paths = mutableListOf<List<String>>()
         val currentPath = listOf<String>()
-        countPaths("start", "end", paths, adjacencyMatrix, currentPath)
+        countPaths("start", "end", paths, adjacencyMatrix, currentPath, partTwo)
         println(paths.size)
     }
 
+
     private fun countPaths(start: String, end:String, paths: MutableList<List<String>>,
                            matrix: MutableList<Pair<String, String>>,
-                           currentPath: List<String>) {
+                           currentPath: List<String>, partTwo: Boolean) {
         val thisPath = currentPath.plus(start)
         if (start == end) {
             paths.add(thisPath)
@@ -37,16 +43,16 @@ object Day12 {
             .plus(matrix.filter { it.second == start }.map { it.first })
         neighbors.filter { it != "start" }.forEach {
             if (it.isSmallCave()) {
-                if (containsAnySmallCaveMoreThanOnce(thisPath)) {
+                if (!partTwo || containsAnySmallCaveMoreThanOnce(thisPath)) {
                     if (!thisPath.contains(it)) {
-                        countPaths(it, end, paths, matrix, thisPath)
+                        countPaths(it, end, paths, matrix, thisPath, partTwo)
                     }
                 }
                 else {
-                    countPaths(it, end, paths, matrix, thisPath)
+                    countPaths(it, end, paths, matrix, thisPath, partTwo)
                 }
             } else {
-                countPaths(it, end, paths, matrix, thisPath)
+                countPaths(it, end, paths, matrix, thisPath, partTwo)
             }
         }
 
