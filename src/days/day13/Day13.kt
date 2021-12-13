@@ -12,7 +12,7 @@ object Day13 {
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
 
-        val dots = items.filter { !it.startsWith("fold along") }.filter { !it.isBlank() }.map {
+        var dots = items.filter { !it.startsWith("fold along") }.filter { !it.isBlank() }.map {
             val parts = it.split(",")
             Pair(parts[0].toInt(), parts[1].toInt())
         }.toSet()
@@ -28,41 +28,39 @@ object Day13 {
                 }
             }
 
-        var set = dots.toSet()
+        println (reflectAlongX(dots, 655).size)
+
         foldInstructions.forEach {
-            if (it.first == "x") {
-                set = reflectAlongX(set, it.second)
+            dots = if (it.first == "x") {
+                reflectAlongX(dots, it.second)
             } else {
-                set = reflectAlongY(set, it.second)
+                reflectAlongY(dots, it.second)
             }
         }
 
-        val maxX = set.maxOf { it.first }
-        val maxY = set.maxOf { it.second }
+        val maxY = dots.maxOf { it.second }
 
-            for (j in 0..maxY) {
-                val thisLine = set.filter { it.second == j }
-                for (k in 0..thisLine.map { it.first }.maxOrNull()!!) {
-                    if (Pair(k, j) in set) {
-                        print ("*")
-                    }
-                    else {
-                        print (" ")
-                    }
+        for (j in 0..maxY) {
+            val thisLine = dots.filter { it.second == j }
+            for (k in 0..thisLine.maxOf { it.first }) {
+                if (Pair(k, j) in dots) {
+                    print("*")
+                } else {
+                    print(" ")
                 }
-                println("")
             }
-
+            println("")
+        }
 
     }
 
-    private fun reflectAlongX(dots: Set<Pair<Int, Int>>, coordinate: Int): Set<Pair<Int,Int>> {
+    private fun reflectAlongX(dots: Set<Pair<Int, Int>>, coordinate: Int): Set<Pair<Int, Int>> {
         return dots.map {
             if (it.first < coordinate) {
                 return@map it
             }
             val distanceFromCoordinate = abs(coordinate - it.first)
-            return@map Pair(it.first - 2*distanceFromCoordinate, it.second)
+            return@map Pair(it.first - 2 * distanceFromCoordinate, it.second)
         }.toSet()
     }
 
@@ -72,7 +70,7 @@ object Day13 {
                 return@map it
             }
             val distanceFromCoordinate = abs(coordinate - it.second)
-            return@map Pair(it.first, it.second  - 2*distanceFromCoordinate)
+            return@map Pair(it.first, it.second - 2 * distanceFromCoordinate)
         }.toSet()
     }
 }
