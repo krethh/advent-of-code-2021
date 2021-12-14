@@ -17,7 +17,6 @@ object Day13 {
             Pair(parts[0].toInt(), parts[1].toInt())
         }.toSet()
 
-
         val foldInstructions = items.filter { it.startsWith("fold along") }
             .map {
                 val parts = it.split("\\s+".toRegex())[2].split("=")
