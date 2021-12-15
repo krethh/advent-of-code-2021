@@ -1,6 +1,7 @@
 package days.day15
 
 import utils.Grid
+import utils.GridElement
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -14,28 +15,52 @@ object Day15 {
         val items = Files.readAllLines(input).map { it.toString() }
 
         val grid = Grid.from(items) { it.toInt() }
+
+        performDijkstra(grid)
+
+        // ugly
+        for (i in 0 until grid.iSize) {
+            for (j in 0 until grid.jSize) {
+                for (stepI in 0 until 5) {
+                    for (stepJ in 0 until 5) {
+                        if (!(stepI == 0 && stepJ == 0)) {
+                            var newValue = (grid.valueAt(i, j) + stepI + stepJ)
+                            if (newValue > 9) {
+                                newValue %= 9
+                            }
+                            val newElement =
+                                GridElement(value = newValue, i + grid.iSize * stepI, j + grid.jSize * stepJ)
+                            grid.items.add(newElement)
+                        }
+                    }
+                }
+            }
+        }
+
+        grid.iSize *= 5
+        grid.jSize *= 5
+
+        performDijkstra(grid)
+    }
+
+    private fun performDijkstra(grid: Grid<Int>) {
+        var current = Pair(0, 0)
         val finalPosition = Pair(grid.iSize - 1, grid.jSize - 1)
 
-        var current = Pair(0, 0)
-        var visited = mutableSetOf<Pair<Int, Int>>()
-
-        val queue = ArrayDeque<Pair<Int, Int>>()
         val riskToNode = mutableMapOf<Pair<Int, Int>, Int>()
-        riskToNode.put(current, 0)
+        val comparator = compareBy<Pair<Int, Int>> { riskToNode.getOrDefault(it, Int.MAX_VALUE) }
+        val queue = PriorityQueue(comparator)
+        riskToNode[current] = 0
         queue.add(current)
 
         /**
          * Note to future self: Dijkstra is king. Don't try to write recursive functions if you don't need to, dumbass
          */
         while (!queue.isEmpty()) {
-            current = queue.removeFirst()
-            if (visited.contains(current)) {
-                continue
-            }
+            current = queue.remove()
             if (current == finalPosition) {
                 break
             }
-            visited.add(current)
             val neighbors = grid.horizontalVerticalNeighborsOf(current.first, current.second)
             neighbors.forEach {
                 val riskForNeighbor = riskToNode[current]!! + it.value
