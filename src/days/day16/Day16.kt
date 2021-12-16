@@ -1,5 +1,8 @@
 package days.day16
 
+import binaryToBigInt
+import binaryToInt
+import hexToBinary
 import java.io.IOException
 import java.math.BigInteger
 import java.nio.file.Files
@@ -12,51 +15,39 @@ object Day16 {
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
 
-        val value = items[0]
-        var result = ""
-        value.forEach {
-            val int = Integer.parseInt(it.toString(), 16)
-            val binary = Integer.toBinaryString(int).padStart(4, '0')
-            result += binary
-        }
+        val payload = items[0].hexToBinary()
 
-        val packet = decodePacket(result)
-        println (packet.versionSum())
-        println (packet.totalValue())
+        val packet = decodePacket(payload)
+        println(packet.versionSum())
+        println(packet.totalValue())
     }
 
-    private fun String.value(): Int = Integer.parseInt(this, 2)
-
-    private fun String.bigInt() = BigInteger(this, 2)
-
-    private fun decodePacket(result: String): Packet {
+    private fun decodePacket(payload: String): Packet {
         var currentIndex = 7
+        val (version, typeId) = payload.extractVersionAndTypeId()
 
-        val packetVersion = result.substring(0 until 3).value()
-        val packetTypeId = result.substring(3 until 6).value()
-
-        if (packetTypeId == 4) {
-            return decodeLiteralValuePacket(result)
+        if (typeId == 4) {
+            return decodeLiteralValuePacket(payload)
         }
 
         // operator packet
-        val lengthTypeId = result.substring(6, 7).value()
+        val lengthTypeId = payload.substring(6, 7).binaryToInt()
 
         var lengthOfSubpackets = 0
         var numberOfSubpackets = 0
         if (lengthTypeId == 0) {
-            lengthOfSubpackets = result.substring(currentIndex, currentIndex + 15).value()
+            lengthOfSubpackets = payload.substring(currentIndex, currentIndex + 15).binaryToInt()
             currentIndex += 15
         } else {
-            numberOfSubpackets = result.substring(currentIndex, currentIndex + 11).value()
+            numberOfSubpackets = payload.substring(currentIndex, currentIndex + 11).binaryToInt()
             currentIndex += 11
         }
 
-        val headerLength = if (lengthTypeId == 0) 15 else 11
+        val headerLength = 7 + if (lengthTypeId == 0) 15 else 11
 
         val decodedPackets = mutableListOf<Packet>()
         while (true) {
-            val packet = decodePacket(result.substring(currentIndex))
+            val packet = decodePacket(payload.substring(currentIndex))
             decodedPackets.add(packet)
             currentIndex += packet.totalLengthInBits
             if (lengthTypeId == 0 && decodedPackets.sumOf { it.totalLengthInBits } >= lengthOfSubpackets) {
@@ -66,69 +57,60 @@ object Day16 {
                 break
             }
         }
-        return Packet(packetVersion, packetTypeId, null, true, null, 7 + headerLength + decodedPackets.sumOf { it.totalLengthInBits }, decodedPackets)
+        return Packet(
+            version,
+            typeId,
+            null,
+            headerLength + decodedPackets.sumOf { it.totalLengthInBits },
+            decodedPackets
+        )
     }
 
-    private fun decodeLiteralValuePacket(result: String): Packet {
-        var currentIndex = 0
-        val subpacketVersion = result.substring(currentIndex, currentIndex + 3).value()
-        currentIndex += 3
-        val subpacketTypeId = result.substring(currentIndex, currentIndex + 3).value()
-        currentIndex += 3
+    private fun decodeLiteralValuePacket(payload: String): Packet {
+        var currentIndex = 6
+
+        val (version, typeId) = payload.extractVersionAndTypeId()
 
         var valueBits = ""
         var bitsRead = 0
         while (true) {
-            valueBits += result.substring(currentIndex + 1, currentIndex + 5)
+            valueBits += payload.substring(currentIndex + 1, currentIndex + 5)
             bitsRead++
             currentIndex += 5
-            if (result[currentIndex - 5] == '0') {
+            if (payload[currentIndex - 5] == '0') {
                 break
             }
         }
-        return Packet(
-            subpacketVersion,
-            subpacketTypeId,
-            valueBits.bigInt(),
-            false,
-            null,
-            bitsRead * 5 + 6,
-            mutableListOf()
-        )
+        return Packet(version, typeId, valueBits.binaryToBigInt(), bitsRead * 5 + 6, mutableListOf())
     }
 
-    private fun Packet.versionSum(): Int {
-        return versionSumUtil(0)
+    private fun String.extractVersionAndTypeId() = Pair(this.substring(0, 3).binaryToInt(), this.substring(3, 6).binaryToInt())
+
+    private fun Packet.versionSum(): Int = versionSumUtil(0)
+
+    private fun Packet.versionSumUtil(sum: Int): Int = if (!this.isOperator()) {
+        sum + version
+    } else {
+        version + children.sumOf { it.versionSum() }
     }
 
-    private fun Packet.versionSumUtil(sum: Int): Int {
-        return if (!this.operator) {
-            sum + version
-        } else {
-            version + children.sumOf { it.versionSum() }
-        }
+    private fun Packet.totalValue(): BigInteger = when (this.typeId) {
+        0 -> children.sumOf { it.totalValue() }
+        1 -> children.map { it.totalValue() }.reduce { acc, value -> acc.times(value) }
+        2 -> children.minOfOrNull { it.totalValue() }!!
+        3 -> children.maxOfOrNull { it.totalValue() }!!
+        4 -> this.value!!
+        5 -> if (this.children[0].totalValue() > this.children[1].totalValue()) BigInteger.ONE else BigInteger.ZERO
+        6 -> if (this.children[1].totalValue() > this.children[0].totalValue()) BigInteger.ONE else BigInteger.ZERO
+        else -> if (this.children[1].totalValue() == this.children[0].totalValue()) BigInteger.ONE else BigInteger.ZERO
     }
 
-
-    private fun Packet.totalValue(): BigInteger {
-        return when(this.typeId) {
-            0 -> children.sumOf { it.totalValue() }
-            1 -> children.map { it.totalValue() }.reduce{ acc, value -> acc.times(value)}
-            2 -> children.minOfOrNull { it.totalValue() }!!
-            3 -> children.maxOfOrNull { it.totalValue() }!!
-            4 -> this.value!!
-            5 -> if (this.children[0].totalValue() > this.children[1].totalValue()) BigInteger.ONE else BigInteger.ZERO
-            6 -> if (this.children[1].totalValue() > this.children[0].totalValue()) BigInteger.ONE else BigInteger.ZERO
-            else -> if (this.children[1].totalValue() == this.children[0].totalValue()) BigInteger.ONE else BigInteger.ZERO
-        }
-    }
+    private fun Packet.isOperator() = this.typeId != 4
 
     data class Packet(
         val version: Int,
         val typeId: Int,
         val value: BigInteger?,
-        val operator: Boolean,
-        val payload: String?,
         val totalLengthInBits: Int,
         val children: MutableList<Packet>
     )
