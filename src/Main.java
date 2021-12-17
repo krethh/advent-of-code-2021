@@ -6,6 +6,7 @@ import days.day13.Day13;
 import days.day14.Day14;
 import days.day15.Day15;
 import days.day16.Day16;
+import days.day17.Day17;
 import days.day2.Day2;
 import days.day3.Day3;
 import days.day4.Day4;
@@ -36,8 +37,8 @@ public class Main {
 //        Day13.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day13.txt"));
 //        Day14.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day14.txt"));
 //        Day15.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day15.txt"));
-        Day16.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day16.txt"));
-//        Day17.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day17.txt"));
+//        Day16.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day16.txt"));
+        Day17.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day17.txt"));
 //        Day18.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day18.txt"));
 //        Day19.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day19.txt"));
 //        Day20.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day20.txt"));
