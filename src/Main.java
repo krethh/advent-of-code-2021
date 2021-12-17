@@ -7,6 +7,7 @@ import days.day14.Day14;
 import days.day15.Day15;
 import days.day16.Day16;
 import days.day17.Day17;
+import days.day18.Day18;
 import days.day2.Day2;
 import days.day3.Day3;
 import days.day4.Day4;

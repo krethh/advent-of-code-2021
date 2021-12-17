@@ -16,8 +16,8 @@ object Day17 {
 
         var succesfulThrows = 0
         var maxHeight = 0
-        for (x in IntRange(0, 500)) {
-            for (y in IntRange(-500, 500)) {
+        for (x in IntRange(0, targetArea.xMax)) {
+            for (y in IntRange(targetArea.yMin, 500)) {
                 var maxHeightThisThrow = 0
                 val startingVelocity = Velocity(x, y)
                 var state = State(startingVelocity = startingVelocity, velocity = startingVelocity)
