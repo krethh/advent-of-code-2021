@@ -3,6 +3,9 @@ package days.day17
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.sign
 
 object Day17 {
 
@@ -13,11 +16,10 @@ object Day17 {
         val numbers = "-?[1-9]\\d*|0".toRegex().findAll(items)
         val targetArea = numbers.toList().map { it.value.toInt() }
 
-        val map = mutableMapOf<Velocity, Int?>()
-
+        var succesfulThrows = 0
         var maxHeight = 0
         for (x in IntRange(0, 500)) {
-            for (y in IntRange(1, 500)) {
+            for (y in IntRange(-500, 500)) {
                 var maxHeightThisThrow = 0
                 val startingPosition = Position(0, 0)
                 val startingVelocity = Velocity(x, y)
@@ -25,56 +27,45 @@ object Day17 {
 
                 while (true) {
                     state = state.move()
-                    if (maxHeightThisThrow < state.position.y) {
-                        maxHeightThisThrow = state.position.y
-                    }
+                    maxHeightThisThrow = max(maxHeightThisThrow, state.position.y)
                     if (state.isWithin(targetArea)) {
-                        if (maxHeightThisThrow > maxHeight) {
-                            println(maxHeightThisThrow)
-                            maxHeight = maxHeightThisThrow
-                        }
-                        map[state.startingVelocity] = maxHeight
+                        maxHeight = max(maxHeight, maxHeightThisThrow)
+                        succesfulThrows++
                         break
                     }
                     if (state.wontReach(targetArea)) {
-                        map[state.startingVelocity] = null
                         break
                     }
                 }
             }
         }
 
-        println (map.filter { it.value == map.maxOf { it.value ?: 0 } })
+        println(maxHeight)
+        println(succesfulThrows)
     }
 
-    private fun State.wontReach(values: List<Int>): Boolean {
-        val yValues = values.subList(2, 4)
+    private fun State.wontReach(targetArea: List<Int>): Boolean {
+        val xValues = targetArea.subList(0, 2)
+        val yValues = targetArea.subList(2, 4)
 
-        return this.position.y <= yValues.minOfOrNull { it }!!
+        return this.position.y <= yValues.minOrNull()!! || this.position.x >= xValues.maxOrNull()!!
     }
-    
-    private fun State.isWithin(values: List<Int>): Boolean {
-        val xValues = values.subList(0, 2)
-        val yValues = values.subList(2, 4)
-        
-        return this.position.x >= xValues.minOfOrNull { it }!!
-                && this.position.x <= xValues.maxOfOrNull { it }!!
-                && this.position.y >= yValues.minOfOrNull { it }!!
-                && this.position.y <= yValues.maxOfOrNull { it }!!
+
+    private fun State.isWithin(targetArea: List<Int>): Boolean {
+        val xValues = targetArea.subList(0, 2)
+        val yValues = targetArea.subList(2, 4)
+
+        return this.position.x >= xValues.minOrNull()!!
+                && this.position.x <= xValues.maxOrNull()!!
+                && this.position.y >= yValues.minOrNull()!!
+                && this.position.y <= yValues.maxOrNull()!!
     }
 
     private fun State.move(): State {
         val newX = this.position.x + this.velocity.x
         val newY = this.position.y + this.velocity.y
-        var newVelocityX = this.velocity.x
-
-        if (newVelocityX < 0) {
-            newVelocityX += 1
-        } else if(newVelocityX > 0) {
-            newVelocityX -= 1
-        }
-
-        var newVelocityY = this.velocity.y - 1
+        val newVelocityX = abs(this.velocity.x - 1) * this.velocity.x.sign
+        val newVelocityY = this.velocity.y - 1
 
         return State(Position(newX, newY), this.startingVelocity, Velocity(newVelocityX, newVelocityY))
     }
