@@ -12,18 +12,15 @@ object Day17 {
     @JvmStatic
     @Throws(IOException::class)
     fun solve(input: Path?) {
-        val items = Files.readAllLines(input).map { it.toString() }[0]
-        val numbers = "-?[1-9]\\d*|0".toRegex().findAll(items)
-        val targetArea = numbers.toList().map { it.value.toInt() }
+        val targetArea = TargetArea(209, 238, -86, -59)
 
         var succesfulThrows = 0
         var maxHeight = 0
         for (x in IntRange(0, 500)) {
             for (y in IntRange(-500, 500)) {
                 var maxHeightThisThrow = 0
-                val startingPosition = Position(0, 0)
                 val startingVelocity = Velocity(x, y)
-                var state = State(startingPosition, startingVelocity, startingVelocity)
+                var state = State(startingVelocity = startingVelocity, velocity = startingVelocity)
 
                 while (true) {
                     state = state.move()
@@ -44,21 +41,15 @@ object Day17 {
         println(succesfulThrows)
     }
 
-    private fun State.wontReach(targetArea: List<Int>): Boolean {
-        val xValues = targetArea.subList(0, 2)
-        val yValues = targetArea.subList(2, 4)
-
-        return this.position.y <= yValues.minOrNull()!! || this.position.x >= xValues.maxOrNull()!!
+    private fun State.wontReach(targetArea: TargetArea): Boolean {
+        return this.position.y <= targetArea.yMin || this.position.x >= targetArea.xMax
     }
 
-    private fun State.isWithin(targetArea: List<Int>): Boolean {
-        val xValues = targetArea.subList(0, 2)
-        val yValues = targetArea.subList(2, 4)
-
-        return this.position.x >= xValues.minOrNull()!!
-                && this.position.x <= xValues.maxOrNull()!!
-                && this.position.y >= yValues.minOrNull()!!
-                && this.position.y <= yValues.maxOrNull()!!
+    private fun State.isWithin(targetArea: TargetArea): Boolean {
+        return this.position.x >= targetArea.xMin
+                && this.position.x <= targetArea.xMax
+                && this.position.y >= targetArea.yMin
+                && this.position.y <= targetArea.yMax
     }
 
     private fun State.move(): State {
@@ -70,7 +61,8 @@ object Day17 {
         return State(Position(newX, newY), this.startingVelocity, Velocity(newVelocityX, newVelocityY))
     }
 
+    data class TargetArea(val xMin: Int, val xMax: Int, val yMin: Int, val yMax: Int)
     data class Position(val x: Int, val y: Int)
     data class Velocity(val x: Int, val y: Int)
-    data class State(val position: Position, val startingVelocity: Velocity, val velocity: Velocity)
+    data class State(val position: Position = Position(0, 0), val startingVelocity: Velocity, val velocity: Velocity)
 }
