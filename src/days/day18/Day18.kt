@@ -294,5 +294,3 @@ object Day18 {
 
     data class Operation(val fish: Fish, val explode: Boolean)
 }
-
-
