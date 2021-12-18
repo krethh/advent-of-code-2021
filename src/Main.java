@@ -39,8 +39,8 @@ public class Main {
 //        Day14.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day14.txt"));
 //        Day15.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day15.txt"));
 //        Day16.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day16.txt"));
-        Day17.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day17.txt"));
-//        Day18.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day18.txt"));
+//        Day17.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day17.txt"));
+        Day18.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day18.txt"));
 //        Day19.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day19.txt"));
 //        Day20.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day20.txt"));
 //        Day21.solve(Paths.get("C:\\ws\\advent-of-code-2021\\src\\resources\\day21.txt"));
