@@ -4,7 +4,6 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.abs
-import kotlin.math.max
 
 object Day19 {
 
@@ -24,20 +23,11 @@ object Day19 {
         }
 
         val groupedByScanner = points.groupBy { it.scanner }
-
-        var pointId = 0
-        groupedByScanner.forEach { scanner, points ->
-            points.forEach {
-                it.id = pointId++
-                it.originalId = it.id
-            }
-        }
-
-        val normalizedScannersMap = mutableMapOf<Int, Boolean>()
-        normalizedScannersMap[0] = true
+        val normalizedScannersMap = mutableMapOf(0 to true)
 
         val scannerPositions = mutableListOf<Point>()
-        var beacons = mutableSetOf<Point>()
+        val beacons = mutableSetOf<Point>()
+
         beacons.addAll(groupedByScanner[0]!!.map { Point(it.x, it.y, it.z) })
         while (true) {
             if (normalizedScannersMap.filter { it.value }.size == groupedByScanner.size) {
@@ -48,8 +38,14 @@ object Day19 {
             for (notNormalizedScanner in notNormalizedScanners) {
                 val crossingResult = checkForBeacons(beacons.toList(), groupedByScanner[notNormalizedScanner]!!)
                 if (crossingResult.atLeast12Match) {
-                    scannerPositions.add(Point(crossingResult.offset!!.x, crossingResult.offset.y, crossingResult.offset.z))
-                    val normalizedPoints = crossingResult.winningPermutation!!.map { it.shift(crossingResult.offset!!) }
+                    scannerPositions.add(
+                        Point(
+                            crossingResult.offset!!.x,
+                            crossingResult.offset.y,
+                            crossingResult.offset.z
+                        )
+                    )
+                    val normalizedPoints = crossingResult.winningPermutation!!.map { it.shift(crossingResult.offset) }
                     beacons.addAll(normalizedPoints.map { Point(it.x, it.y, it.z) })
                     normalizedScannersMap[notNormalizedScanner!!] = true
                 }
@@ -57,12 +53,7 @@ object Day19 {
         }
 
         println(beacons.size)
-        var maxManhattanDistance = 0
-        scannerPositions.forEach { scanner ->
-            scannerPositions.filter { it != scanner }.forEach {
-                maxManhattanDistance = max(maxManhattanDistance, scanner.manhattanDistanceTo(it))
-            }
-        }
+        val maxManhattanDistance = scannerPositions.flatMap { pos -> scannerPositions.map { it.manhattanDistanceTo(pos) } }.maxOrNull()
         println(maxManhattanDistance)
     }
 
@@ -71,32 +62,21 @@ object Day19 {
     }
 
     private fun Point.shift(offset: Offset): Point {
-        return Point(
-            x + offset.x,
-            y + offset.y,
-            z + offset.z,
-            this.scanner,
-            this.permutationId,
-            this.id,
-            this.originalId,
-            this.sourcePoint
-        )
+        return Point(x + offset.x, y + offset.y, z + offset.z, this.scanner, this.permutationId)
     }
 
-    private fun checkForBeacons(firstScanner: List<Point>, secondScanner: List<Point>): CrossingResult {
-        val permutations = secondScanner.flatMap { it.permutations() }.groupBy { it.permutationId }
+    private fun checkForBeacons(existingBeacons: List<Point>, candidates: List<Point>): CrossingResult {
+        val permutations = candidates.flatMap { it.permutations() }.groupBy { it.permutationId }
         for (permutation in permutations) {
-            val firstOffsets = getPairwiseOffsets(firstScanner)
+            val firstOffsets = getPairwiseOffsets(existingBeacons)
             val secondOffsets = getPairwiseOffsets(permutation.value)
 
-            val beacons1 = getBeaconsFromOffsets(firstOffsets, secondOffsets)
-            if ((beacons1?.size ?: 0) >= 12) {
-                val beacons2 = getBeaconsFromOffsets(secondOffsets, firstOffsets)
-                if ((beacons2?.size ?: 0) >= 12) {
-                    val offset = getOffset(beacons1!!, beacons2!!)
-                    if (offset != Offset(0, 0, 0)) {
-                        return CrossingResult(true, permutation.value.toSet(), offset)
-                    }
+            val firstBeacons = getBeaconsFromOffsets(firstOffsets, secondOffsets)
+            val secondBeacons = getBeaconsFromOffsets(secondOffsets, firstOffsets)
+            if ((firstBeacons?.size ?: 0) >= 12 && (secondBeacons?.size ?: 0) >= 12) {
+                val offset = getOffset(firstBeacons!!, secondBeacons!!)
+                if (offset != null) {
+                    return CrossingResult(true, permutation.value.toSet(), offset)
                 }
             }
         }
@@ -110,50 +90,35 @@ object Day19 {
             ?.plus(intersection.maxByOrNull { it.value.size }!!.key)
     }
 
-    private fun getOffset(firstPoints: List<Point?>, secondPoints: List<Point?>): Offset {
-        var allXOffsets = mutableListOf<Int>()
-        var allYOffsets = mutableListOf<Int>()
-        var allZOffsets = mutableListOf<Int>()
+    private fun getOffset(firstPoints: List<Point?>, secondPoints: List<Point?>): Offset? {
+        val allXOffsets = mutableListOf<Int>()
+        val allYOffsets = mutableListOf<Int>()
+        val allZOffsets = mutableListOf<Int>()
 
         firstPoints.forEach { first ->
-            secondPoints.forEach { second ->
+            secondPoints.filter { it != first }.forEach { second ->
                 allXOffsets.add(first!!.x - second!!.x)
                 allYOffsets.add(first.y - second.y)
                 allZOffsets.add(first.z - second.z)
             }
         }
 
-        // is there a most common element?
         val xOffsetsGrouped = allXOffsets.groupingBy { it }.eachCount()
         val yOffsetsGrouped = allYOffsets.groupingBy { it }.eachCount()
         val zOffsetsGrouped = allZOffsets.groupingBy { it }.eachCount()
-        if (xOffsetsGrouped.values.any { it > 11 } && yOffsetsGrouped.values.any { it > 11 } && zOffsetsGrouped.values.any { it > 11 }) {
+        if (xOffsetsGrouped.values.any { it >= 12 } && yOffsetsGrouped.values.any { it >= 12 } && zOffsetsGrouped.values.any { it >= 12 }) {
             val mostCommonX = xOffsetsGrouped.maxByOrNull { it.value }!!.key
-            val mostCommonY = allYOffsets.groupingBy { it }.eachCount().maxByOrNull { it.value }!!.key
-            val mostCommonZ = allZOffsets.groupingBy { it }.eachCount().maxByOrNull { it.value }!!.key
-            val offset = Offset(mostCommonX, mostCommonY, mostCommonZ)
-            return offset
+            val mostCommonY = yOffsetsGrouped.maxByOrNull { it.value }!!.key
+            val mostCommonZ = zOffsetsGrouped.maxByOrNull { it.value }!!.key
+            return Offset(mostCommonX, mostCommonY, mostCommonZ)
         }
-        return Offset(0, 0, 0)
+        return null
     }
 
     private fun getPairwiseOffsets(points: List<Point?>): List<Offset> {
-        val result = mutableListOf<Offset>()
-        for (i in points.indices)
-            for (j in points.indices) {
-                if (i != j) {
-                    result.add(
-                        Offset(
-                            points[i]!!.x - points[j]!!.x,
-                            points[i]!!.y - points[j]!!.y,
-                            points[i]!!.z - points[j]!!.z,
-                            points[i],
-                            points[j]
-                        )
-                    )
-                }
-            }
-        return result
+        return points.flatMap { outer ->
+            points.filter { it != outer }.map { Offset(outer!!.x - it!!.x, outer.y - it.y, outer.z - it.z, outer, it) }
+        }
     }
 
     private fun Point.permutations(): List<Point> {
@@ -162,30 +127,18 @@ object Day19 {
         val z = this.z
 
         return listOf(
-            Point(x,y,z, scanner, 0, sourcePoint = this, originalId = id),
-            Point(y,z,x, scanner, 1, sourcePoint = this, originalId = id),
-            Point(z,x,y, scanner, 2, sourcePoint = this, originalId = id),
-            Point(z,y,-x, scanner, 3, sourcePoint = this, originalId = id),
-            Point(y,x,-z, scanner, 4, sourcePoint = this, originalId = id),
-            Point(x,z,-y, scanner, 5, sourcePoint = this, originalId = id),
-            Point(x,-y,-z, scanner, 6, sourcePoint = this, originalId = id),
-            Point(y,-z,-x, scanner, 7, sourcePoint = this, originalId = id),
-            Point(z,-x,-y, scanner, 8, sourcePoint = this, originalId = id),
-            Point(z,-y,x, scanner, 9, sourcePoint = this, originalId = id),
-            Point(y,-x,z, scanner, 10, sourcePoint = this, originalId = id),
-            Point(x,-z,y, scanner, 11, sourcePoint = this, originalId = id),
-            Point(-x,y,-z, scanner, 12, sourcePoint = this, originalId = id),
-            Point(-y,z,-x, scanner, 13, sourcePoint = this, originalId = id),
-            Point(-z,x,-y, scanner, 14, sourcePoint = this, originalId = id),
-            Point(-z,y,x, scanner, 15, sourcePoint = this, originalId = id),
-            Point(-y,x,z, scanner, 16, sourcePoint = this, originalId = id),
-            Point(-x,z,y, scanner, 17, sourcePoint = this, originalId = id),
-            Point(-x,-y,z, scanner, 18, sourcePoint = this, originalId = id),
-            Point(-y,-z,x, scanner, 19, sourcePoint = this, originalId = id),
-            Point(-z,-x,y, scanner, 20, sourcePoint = this, originalId = id),
-            Point(-z,-y,-x,scanner, 21, sourcePoint = this, originalId = id),
-            Point(-y,-x,-z,scanner, 22, sourcePoint = this, originalId = id),
-            Point(-x,-z,-y, scanner, 23, sourcePoint = this, originalId = id),
+            Point(x, y, z, scanner, 0), Point(y, z, x, scanner, 1),
+            Point(z, x, y, scanner, 2), Point(z, y, -x, scanner, 3),
+            Point(y, x, -z, scanner, 4), Point(x, z, -y, scanner, 5),
+            Point(x, -y, -z, scanner, 6), Point(y, -z, -x, scanner, 7),
+            Point(z, -x, -y, scanner, 8), Point(z, -y, x, scanner, 9),
+            Point(y, -x, z, scanner, 10), Point(x, -z, y, scanner, 11),
+            Point(-x, y, -z, scanner, 12), Point(-y, z, -x, scanner, 13),
+            Point(-z, x, -y, scanner, 14), Point(-z, y, x, scanner, 15),
+            Point(-y, x, z, scanner, 16), Point(-x, z, y, scanner, 17),
+            Point(-x, -y, z, scanner, 18), Point(-y, -z, x, scanner, 19),
+            Point(-z, -x, y, scanner, 20), Point(-z, -y, -x, scanner, 21),
+            Point(-y, -x, -z, scanner, 22), Point(-x, -z, -y, scanner, 23)
         )
     }
 
@@ -218,15 +171,5 @@ object Day19 {
     }
 
     data class CrossingResult(val atLeast12Match: Boolean, val winningPermutation: Set<Point>?, val offset: Offset?)
-
-    data class Point(
-        var x: Int,
-        var y: Int,
-        var z: Int,
-        var scanner: Int? = 0,
-        val permutationId: Int = 0,
-        var id: Int = 0,
-        var originalId: Int = 0,
-        val sourcePoint: Point? = null
-    )
+    data class Point(var x: Int, var y: Int, var z: Int, var scanner: Int? = 0, val permutationId: Int = 0)
 }
