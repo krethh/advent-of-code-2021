@@ -24,7 +24,7 @@ object Day15 {
                 for (stepI in 0 until 5) {
                     for (stepJ in 0 until 5) {
                         if (!(stepI == 0 && stepJ == 0)) {
-                            var newValue = (grid.valueAt(i, j) + stepI + stepJ)
+                            var newValue = (grid.valueAt(i, j, 0) + stepI + stepJ)
                             if (newValue > 9) {
                                 newValue %= 9
                             }

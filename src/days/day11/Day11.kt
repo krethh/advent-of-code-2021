@@ -19,15 +19,15 @@ object Day11 {
             var flashedInThisStep = mutableSetOf<Pair<Int, Int>>()
             for (i in 0 until grid.iSize) {
                 for (j in 0 until grid.jSize) {
-                    grid.at(i, j).value = grid.valueAt(i, j) + 1
-                    if (grid.valueAt(i, j) > 9 && !flashedInThisStep.contains(Pair(i, j))) {
+                    grid.at(i, j)!!.value = grid.valueAt(i, j, 0) + 1
+                    if (grid.valueAt(i, j, 0) > 9 && !flashedInThisStep.contains(Pair(i, j))) {
                         flashedInThisStep.add(Pair(i, j))
                         flashNeighbors(grid, i, j, flashedInThisStep)
                     }
                 }
             }
             flashedInThisStep.forEach { (i, j) ->
-                grid.at(i, j).value = 0
+                grid.at(i, j)!!.value = 0
                 flashes += 1
             }
 
