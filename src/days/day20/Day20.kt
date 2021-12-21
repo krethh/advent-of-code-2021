@@ -38,11 +38,9 @@ object Day20 {
         }
     }
 
-    private fun String.toBit(): String  {
-        return if (this == ".") {
-            "0"
-        } else {
-            "1"
-        }
+    private fun String.toBit(): String = if (this == ".") {
+        "0"
+    } else {
+        "1"
     }
 }
