@@ -1,7 +1,6 @@
 package days.day22
 
 import java.io.IOException
-import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.abs
@@ -29,8 +28,8 @@ object Day22 {
         val onCubes = mutableListOf<Cube>()
 
         val sum = cubes.sumOf {
-            val onOverlaps = onCubes.filter { cube -> cube.sizeOfOverlapWith(it) > BigDecimal.ZERO }.map { cube -> cube.getOverlapWith(it)!! }
-            val offOverlaps = offCubes.filter { cube -> cube.sizeOfOverlapWith(it) > BigDecimal.ZERO }.map { cube -> cube.getOverlapWith(it)!! }
+            val onOverlaps = onCubes.mapNotNull { cube -> cube.getOverlapWith(it) }
+            val offOverlaps = offCubes.mapNotNull { cube -> cube.getOverlapWith(it) }
 
             offCubes.addAll(onOverlaps)
             onCubes.addAll(offOverlaps)
@@ -39,16 +38,16 @@ object Day22 {
                 onCubes.add(it)
             }
 
-            offOverlaps.sumOf { it.size() }.minus(onOverlaps.sumOf { it.size() }).plus(it.size())
+            offOverlaps.sumOf { it.size() } - onOverlaps.sumOf { it.size() } + it.size()
         }
 
         println(sum)
     }
 
-    fun Cube.size(): BigDecimal {
-        return if (this.on) (this.x2 - this.x1 + 1).toBigDecimal()
-            .times((this.y2 - this.y1 + 1).toBigDecimal())
-            .times((this.z2 - this.z1 + 1).toBigDecimal()) else BigDecimal.ZERO
+    fun Cube.size(): Long {
+        return if (this.on) (this.x2 - this.x1 + 1).toLong()
+            .times((this.y2 - this.y1 + 1).toLong())
+            .times((this.z2 - this.z1 + 1).toLong()) else 0L
     }
 
     private fun Cube.getOverlapWith(other: Cube): Cube? {
@@ -68,10 +67,6 @@ object Day22 {
             return null
         }
         return Cube(startOverlapX, endOverlapX, startOverlapY, endOverlapY, startOverlapZ, endOverlapZ, true)
-    }
-
-    private fun Cube.sizeOfOverlapWith(other: Cube): BigDecimal {
-        return this.getOverlapWith(other)?.size() ?: BigDecimal.ZERO
     }
 
     data class Cube(val x1: Int, val x2: Int, val y1: Int, val y2: Int, val z1: Int, val z2: Int, val on: Boolean)
