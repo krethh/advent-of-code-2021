@@ -1,11 +1,11 @@
 package days.day22
 
+import utils.combinations
 import java.io.IOException
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.regex.Pattern
-import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -36,19 +36,22 @@ object Day22 {
             cubes.add(Cube(startX, endX, startY, endY, startZ, endZ, it.startsWith("on")))
         }
 
-        val totalPoints = mutableSetOf<Point>()
+        var sumPoints = BigDecimal.ZERO
+        val addedCubes = mutableListOf<Cube>()
 
-        cubes.filter { abs(it.startX) < 50 }.forEach {
-            val points = it.toPoints()
+        cubes.forEach {
             if (it.on) {
-                totalPoints.addAll(points)
+                var toAdd = it.size() - addedCubes.sumOf { added -> it.sizeOfOverlapWith(added) }
+                sumPoints = sumPoints.plus(toAdd)
+                addedCubes.add(it)
             } else {
-                totalPoints.removeAll(points)
+                val overlaps = addedCubes.sumOf { added -> it.sizeOfOverlapWith(added) }
+                sumPoints = sumPoints.minus(overlaps)
             }
+
         }
 
-        println(totalPoints.size)
-
+        println(sumPoints)
     }
 
     fun Cube.size(): BigDecimal {
