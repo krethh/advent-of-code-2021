@@ -1,11 +1,10 @@
 package days.day22
 
-import utils.combinations
 import java.io.IOException
 import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.regex.Pattern
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -16,82 +15,64 @@ object Day22 {
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
 
-        var cubes = mutableListOf<Cube>()
-        items.forEach {
-            val pattern = Pattern.compile("-?[1-9]\\d*|0")
-            val matcher = pattern.matcher(it)
-            val digits = mutableListOf<String>()
-            while (matcher.find()) {
-                digits.add(matcher.group())
-            }
-            val digitInts = digits.map { it.toInt() }
-
-            val startX = min(digitInts[0], digitInts[1])
-            val endX = max(digitInts[1], digitInts[0])
-            val startY = min(digitInts[2], digitInts[3])
-            val endY = max(digitInts[2], digitInts[3])
-            val startZ = min(digitInts[4], digitInts[5])
-            val endZ = max(digitInts[4], digitInts[5])
-
-            cubes.add(Cube(startX, endX, startY, endY, startZ, endZ, it.startsWith("on")))
+        val cubes = items.map {
+            val digitInts = "-?[1-9]\\d*|0".toRegex().findAll(it).map { it.value.toInt() }.toList()
+            Cube(digitInts[0], digitInts[1], digitInts[2], digitInts[3], digitInts[4], digitInts[5], it.startsWith("on"))
         }
 
-        var sumPoints = BigDecimal.ZERO
-        val addedCubes = mutableListOf<Cube>()
+        solve(cubes.filter { abs(it.x1) <= 50 })
+        solve(cubes)
+    }
 
-        cubes.forEach {
+    fun solve(cubes: List<Cube>) {
+        val offCubes = mutableListOf<Cube>()
+        val onCubes = mutableListOf<Cube>()
+
+        val sum = cubes.sumOf {
+            val onOverlaps = onCubes.filter { cube -> cube.sizeOfOverlapWith(it) > BigDecimal.ZERO }.map { cube -> cube.getOverlapWith(it)!! }
+            val offOverlaps = offCubes.filter { cube -> cube.sizeOfOverlapWith(it) > BigDecimal.ZERO }.map { cube -> cube.getOverlapWith(it)!! }
+
+            offCubes.addAll(onOverlaps)
+            onCubes.addAll(offOverlaps)
+
             if (it.on) {
-                var toAdd = it.size() - addedCubes.sumOf { added -> it.sizeOfOverlapWith(added) }
-                sumPoints = sumPoints.plus(toAdd)
-                addedCubes.add(it)
-            } else {
-                val overlaps = addedCubes.sumOf { added -> it.sizeOfOverlapWith(added) }
-                sumPoints = sumPoints.minus(overlaps)
+                onCubes.add(it)
             }
 
+            offOverlaps.sumOf { it.size() }.minus(onOverlaps.sumOf { it.size() }).plus(it.size())
         }
 
-        println(sumPoints)
+        println(sum)
     }
 
     fun Cube.size(): BigDecimal {
-        return (this.endX - this.startX + 1).toBigDecimal().times((this.endY - this.startY + 1).toBigDecimal()).times((this.endZ - this.startZ + 1).toBigDecimal())
+        return if (this.on) (this.x2 - this.x1 + 1).toBigDecimal()
+            .times((this.y2 - this.y1 + 1).toBigDecimal())
+            .times((this.z2 - this.z1 + 1).toBigDecimal()) else BigDecimal.ZERO
     }
 
-    fun Cube.sizeOfOverlapWith(other: Cube): BigDecimal {
-        var startOverlapX = max(this.startX, other.startX)
-        var endOverlapX = (min(this.endX, other.endX))
-        
-        var overlapX = startOverlapX < endOverlapX
-        
-        var startOverlapY = max(this.startY, other.startY)
-        var endOverlapY = min(this.endY, other.endY)
-        
-        var overlapY = startOverlapY < endOverlapY  
-        
-        var startOverlapZ = max(this.startZ, other.startZ)
-        var endOverlapZ = min(this.endZ, other.endZ)
-        
-        var overlapZ = startOverlapZ < endOverlapZ
+    private fun Cube.getOverlapWith(other: Cube): Cube? {
+        val startOverlapX = max(this.x1, other.x1)
+        val endOverlapX = min(this.x2, other.x2)
+        val isOverlapX = startOverlapX <= endOverlapX
 
-        if (!(overlapX && overlapY && overlapZ)) {
-            return BigDecimal.ZERO
+        val startOverlapY = max(this.y1, other.y1)
+        val endOverlapY = min(this.y2, other.y2)
+        val isOverlapY = startOverlapY <= endOverlapY
+
+        val startOverlapZ = max(this.z1, other.z1)
+        val endOverlapZ = min(this.z2, other.z2)
+        val isOverlapZ = startOverlapZ <= endOverlapZ
+
+        if (!(isOverlapX && isOverlapY && isOverlapZ)) {
+            return null
         }
-        return Cube(startOverlapX, endOverlapX, startOverlapY, endOverlapY, startOverlapZ, endOverlapZ, true).size()
+        return Cube(startOverlapX, endOverlapX, startOverlapY, endOverlapY, startOverlapZ, endOverlapZ, true)
     }
 
-    fun Cube.toPoints(): Set<Point> {
-        val result = mutableSetOf<Point>()
-        for (i in this.startX..this.endX) {
-            for (j in this.startY..this.endY) {
-                for (k in this.startZ..this.endZ) {
-                    result.add(Point(i, j, k))
-                }
-            }
-        }
-        return result
+    private fun Cube.sizeOfOverlapWith(other: Cube): BigDecimal {
+        return this.getOverlapWith(other)?.size() ?: BigDecimal.ZERO
     }
 
-    data class Point(val x: Int, val y: Int, val z: Int)
-    data class Cube(val startX: Int, val endX: Int, val startY: Int, val endY: Int, val startZ: Int, val endZ: Int, val on: Boolean)
+    data class Cube(val x1: Int, val x2: Int, val y1: Int, val y2: Int, val z1: Int, val z2: Int, val on: Boolean)
 }
