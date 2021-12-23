@@ -10,14 +10,22 @@ object Day23 {
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val nodes = listOf(
-            Node("r10", "C"),
-            Node("r11", "B"),
-            Node("r20", "A"),
+            Node("r10", "A"),
+            Node("r11", "D"),
+            Node("r12", "D"),
+            Node("r13", "B"),
+            Node("r20", "D"),
             Node("r21", "B"),
-            Node("r30", "D"),
-            Node("r31", "D"),
-            Node("r40", "C"),
-            Node("r41", "A"),
+            Node("r22", "C"),
+            Node("r23", "C"),
+            Node("r30", "C"),
+            Node("r31", "A"),
+            Node("r32", "B"),
+            Node("r33", "B"),
+            Node("r40", "A"),
+            Node("r41", "C"),
+            Node("r42", "A"),
+            Node("r43", "D"),
             Node("h1", "."),
             Node("h2", "."),
             Node("h3", "."),
@@ -29,23 +37,31 @@ object Day23 {
 
         val edges = listOf(
             Edge("r10" , "r11", 1),
+            Edge("r11" , "r12", 1),
+            Edge("r12" , "r13", 1),
             Edge("r20" , "r21", 1),
+            Edge("r21" , "r22", 1),
+            Edge("r22" , "r23", 1),
             Edge("r30" , "r31", 1),
+            Edge("r31" , "r32", 1),
+            Edge("r32" , "r33", 1),
             Edge("r40" , "r41", 1),
+            Edge("r41" , "r42", 1),
+            Edge("r42" , "r43", 1),
             Edge("h1", "h2", 1),
             Edge("h2", "h3", 2),
             Edge("h3", "h4", 2),
             Edge("h4", "h5", 2),
             Edge("h5", "h6", 2),
             Edge("h6", "h7", 1),
-            Edge("r11", "h2", 2),
-            Edge("r11", "h3", 2),
-            Edge("r21", "h3", 2),
-            Edge("r21", "h4", 2),
-            Edge("r31", "h4", 2),
-            Edge("r31", "h5", 2),
-            Edge("r41", "h5", 2),
-            Edge("r41", "h6", 2),
+            Edge("r13", "h2", 2),
+            Edge("r13", "h3", 2),
+            Edge("r23", "h3", 2),
+            Edge("r23", "h4", 2),
+            Edge("r33", "h4", 2),
+            Edge("r33", "h5", 2),
+            Edge("r43", "h5", 2),
+            Edge("r43", "h6", 2),
         )
 
         val graph = Graph(nodes, edges)
@@ -56,8 +72,20 @@ object Day23 {
         val visited = mutableMapOf<String, Int>()
         val results = mutableSetOf<Int>()
 
+        val checkpoints = mutableListOf<Int>()
         while (queue.isNotEmpty()) {
             val current = queue.remove()
+
+            if ((visited[graph.serialized()] ?: Int.MAX_VALUE) < current.energy) {
+                continue
+            }
+
+            if (current.energy % 1000 == 0) {
+                if (current.energy !in checkpoints) {
+                    println(current.energy)
+                    checkpoints.add(current.energy)
+                }
+            }
 
             if (current.graph.isTarget()) {
                 results.add(current.energy)
@@ -102,17 +130,17 @@ object Day23 {
         val roomPrefix = room.id.substring(0..1)
         val allRoomNodes = this.nodes.filter { it.id.startsWith(roomPrefix) }
         val currentOccupantsOfRoom = allRoomNodes.filter { it.hasAmphipod() }.map { it.occupant }
-        val triesToEscapeRoom = currentOccupantsOfRoom.size == 1 && currentOccupantsOfRoom[0] == start.occupant
+        val alreadyInRoom = start in allRoomNodes
 
-        if (currentOccupantsOfRoom.any { it != roomPrefix.properRoomOccupant() } && !triesToEscapeRoom) {
+        if (alreadyInRoom) {
+            return true
+        }
+
+        if (currentOccupantsOfRoom.any { it != roomPrefix.properRoomOccupant() }) {
             return false
         }
 
-        if (start.occupant != roomPrefix.properRoomOccupant() && !triesToEscapeRoom) {
-            return false
-        }
-
-        if (room.id !in allRoomNodes.map { it.id }) {
+        if (start.occupant != roomPrefix.properRoomOccupant()) {
             return false
         }
 
@@ -140,12 +168,22 @@ object Day23 {
         if (!node.id.startsWith("r")) {
             return false
         }
-
         val roomPrefix = node.id.substring(0..1)
-        val thisRoomOccupants = this.nodes.filter { it.id.startsWith(roomPrefix) }.map { it.occupant }
-        val properRoomOccupant = roomPrefix.properRoomOccupant()
+        if (node.occupant != roomPrefix.properRoomOccupant()) {
+            return false
+        }
 
-        return thisRoomOccupants.all { it == properRoomOccupant }
+        val indexInRoom = node.id.replace(roomPrefix, "").toInt()
+        var allPresent = true
+        for (i in 0 until indexInRoom) {
+            val id = roomPrefix + i
+            val belowNode = this.nodes.first { it.id == id }
+            if (belowNode.occupant != roomPrefix.properRoomOccupant()) {
+                allPresent = false
+            }
+        }
+
+        return allPresent
     }
 
     private fun String.properRoomOccupant() = when (this) {
@@ -162,10 +200,6 @@ object Day23 {
 
         val neighbors = this.graph.getNeighbors(start)
 
-        // implement: if starting from a room get all possible hallway or room moves
-        // if starting from a hallway, get possible room endpoints (there aren't many)
-        // you cannot generate only the closest step. all possible end positions must be generated at once
-        // implement a visited hash set
         val nextStates = mutableListOf<State>()
 
         neighbors.forEach { neighbor ->
@@ -196,14 +230,10 @@ object Day23 {
     private fun Node.hasAmphipod() = this.occupant in listOf("A", "B", "C", "D")
 
     private fun Graph.isTarget(): Boolean {
-        return nodes.first { it.id == "r10" }.occupant == "A" &&
-                nodes.first { it.id == "r11" }.occupant == "A" &&
-                nodes.first { it.id == "r20" }.occupant == "B" &&
-                nodes.first { it.id == "r21" }.occupant == "B" &&
-                nodes.first { it.id == "r30" }.occupant == "C" &&
-                nodes.first { it.id == "r31" }.occupant == "C" &&
-                nodes.first { it.id == "r40" }.occupant == "D" &&
-                nodes.first { it.id == "r41" }.occupant == "D"
+        return nodes.filter { it.id.startsWith("r1") }.all { it.occupant == "A" } &&
+                nodes.filter { it.id.startsWith("r2") }.all { it.occupant == "B" } &&
+                nodes.filter { it.id.startsWith("r3") }.all { it.occupant == "C" } &&
+                nodes.filter { it.id.startsWith("r4") }.all { it.occupant == "D" }
     }
 
     private fun Graph.serialized() = nodes.sortedBy { it.id }.joinToString("") { "${it.id}-${it.occupant} " }
