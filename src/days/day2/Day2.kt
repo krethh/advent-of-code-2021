@@ -4,8 +4,8 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
-object Day2 {
-    @JvmStatic
+class Day2 {
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }

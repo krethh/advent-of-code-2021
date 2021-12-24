@@ -5,9 +5,9 @@ import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 
-object Day14 {
+class Day14 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         solve(input, 10)

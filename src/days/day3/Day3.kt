@@ -4,8 +4,8 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 
-object Day3 {
-    @JvmStatic
+class Day3 {
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
@@ -57,9 +57,6 @@ object Day3 {
                 break
             }
         }
-
-        println (oxygenItems)
-        println(co2Items)
 
         val oxygenInt = Integer.parseInt(oxygenItems[0], 2);
         val co2Int = Integer.parseInt(co2Items[0], 2);

@@ -7,9 +7,9 @@ import java.nio.file.Path
 import java.util.*
 import kotlin.math.min
 
-object Day21 {
+class Day21 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         solvePartOne()

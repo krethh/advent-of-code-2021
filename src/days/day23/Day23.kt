@@ -4,9 +4,8 @@ import java.io.IOException
 import java.nio.file.Path
 import java.util.*
 
-object Day23 {
+class Day23 {
 
-    @JvmStatic
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val partOneInput = getInputPartOne()

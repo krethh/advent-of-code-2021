@@ -7,9 +7,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
-object Day15 {
+class Day15 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }

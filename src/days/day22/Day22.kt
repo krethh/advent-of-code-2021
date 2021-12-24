@@ -7,9 +7,9 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-object Day22 {
+class Day22 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }

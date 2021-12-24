@@ -5,8 +5,8 @@ import java.math.BigDecimal
 import java.nio.file.Files
 import java.nio.file.Path
 
-object Day6 {
-    @JvmStatic
+class Day6 {
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val lines = Files.readAllLines(input)

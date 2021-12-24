@@ -5,9 +5,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.math.abs
 
-object Day7 {
+class Day7 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input)[0].split(",").map { it.toInt() }

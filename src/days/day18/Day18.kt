@@ -6,11 +6,11 @@ import java.nio.file.Path
 import kotlin.math.ceil
 import kotlin.math.floor
 
-object Day18 {
+class Day18 {
 
     var assignedIds = mutableListOf(0)
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val lines = Files.readAllLines(input).map { it.toString() }

@@ -8,9 +8,9 @@ import java.math.BigInteger
 import java.nio.file.Files
 import java.nio.file.Path
 
-object Day16 {
+class Day16 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }

@@ -7,9 +7,9 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.sign
 
-object Day17 {
+class Day17 {
 
-    @JvmStatic
+    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val targetArea = TargetArea(209, 238, -86, -59)
