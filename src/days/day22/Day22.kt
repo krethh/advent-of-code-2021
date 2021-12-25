@@ -9,7 +9,6 @@ import kotlin.math.min
 
 class Day22 {
 
-    
     @Throws(IOException::class)
     fun solve(input: Path?) {
         val items = Files.readAllLines(input).map { it.toString() }
@@ -19,11 +18,11 @@ class Day22 {
             Cube(digitInts[0], digitInts[1], digitInts[2], digitInts[3], digitInts[4], digitInts[5], it.startsWith("on"))
         }
 
-        solve(cubes.filter { abs(it.x1) <= 50 })
-        solve(cubes)
+        solveCubes(cubes.filter { abs(it.x1) <= 50 })
+        solveCubes(cubes)
     }
 
-    fun solve(cubes: List<Cube>) {
+    fun solveCubes(cubes: List<Cube>) {
         val offCubes = mutableListOf<Cube>()
         val onCubes = mutableListOf<Cube>()
 
